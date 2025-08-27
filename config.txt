@@ -1,0 +1,13 @@
+---GIT
+git config --global user.name mariadiasss
+git config --global user.email mariacoelhodias94@gmail.com
+
+---Criar projeto
+npx create-expo-app@latest GMusic --template blank
+cd GMusic
+
+--Pacotes
+npx expo install react-dom react-native-web @expo/metro-runtime
+npx expo install @react-native-community/slider
+npx expo install expo-av
+
