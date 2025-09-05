@@ -44,6 +44,18 @@ export default function App() {
         </View>
       </View>
 
+        <View style={styles.musicControlsContainer}>
+          <TouchableOpacity>  
+            <Ionicons name='play-skip-back-outline' size ={35} color='#FFD369'/>
+          </TouchableOpacity>
+          <TouchableOpacity>  
+            <Ionicons name='pause-circle' size ={75} color='#FFD369'/>
+          </TouchableOpacity>
+          <TouchableOpacity>  
+            <Ionicons name='play-skip-forward-outline' size ={35} color='#FFD369'/>
+          </TouchableOpacity>
+        </View>
+
       </View>
       <View style={styles.footer}>
         <View style={styles.iconWrapper}>
@@ -120,6 +132,26 @@ const styles = StyleSheet.create({
   songArtist: {
     fontSize: 16,
     fontWeight: '300',
+  },
+  progressBar:{
+    width: 340,
+    height: 40,
+    marginTop: 20,
+  },
+  progressLevelDuration:{
+    width: 340,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressLabelText: {
+    color: '#fff',
+    fontWeight: '500',
+  }, 
+  musicControlsContainer:{
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '60%',
+    marginTop: 10,
   }
-
 });
