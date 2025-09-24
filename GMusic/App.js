@@ -3,7 +3,9 @@ import { StatusBar } from 'expo-status-bar';
 import {Dimensions, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, text, Animated } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
+import { Audio } from 'expo-av';
 import songs from './model/data';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,9 +20,9 @@ export default function App() {
 
   useEffect(() => {
     scrollX.addListener(({value}) => {
-      console;log(`ScrollX : ${value}`);
       const index = Math.round(value / width);
-      console.log(index);
+      //console;log(`ScrollX : ${value}`);
+      //console.log(index);
     });
   })
 
@@ -32,7 +34,64 @@ export default function App() {
         </View>
       </View>
     )
+  };
+
+const loadSound = async () => {
+  const { sound } = await Audio.Sound.createAsync(songs[songIndex].url);
+  setSound(sound);
+  const status = await sound.getStatusAsync();
+  status.isLooping = isLooping;
+  await sound.setIsLoopingAsync(isLooping);
+  setSongStatus(status);
+  setIsPlaying(false);
+}
+
+useEffect(() => {
+  if (sound) {
+    sound.unloadAsync();
   }
+  loadSound();
+  return () => {
+    if (sound) {
+      sound.unloadAsync();
+    }
+  };
+}, [songIndex]);
+
+const play = async () => {
+  if (sound) {
+    setIsPlaying(true);
+    await sound.playAsync();
+  }
+}
+
+const pause = async () => {
+  if (sound) {
+    setIsPlaying(false);
+    await sound.pauseAsync();
+  }
+}
+
+
+const handlePlayPause = async () => {
+  if (isPlaying) {
+    await pause();
+  } else {
+    await play();
+  }
+}
+
+const stop = async () => {
+  if (sound) {
+    await sound.stopAsync();
+    sound.unloadAsync();
+    await loadSound();
+  }
+}
+
+const skipToPrevious = () => {
+  
+}
 
   return (
     <SafeAreaView style={styles.container}>
@@ -88,7 +147,7 @@ export default function App() {
           <TouchableOpacity>  
             <Ionicons name='play-skip-back-outline' size ={35} color='#FFD369'/>
           </TouchableOpacity>
-          <TouchableOpacity>  
+          <TouchableOpacity onPress={handlePlayPause}>  
             <Ionicons name={isPlaying?'pause-circle' : 'play-circle'} size ={75} color='#FFD369'/>
           </TouchableOpacity>
           <TouchableOpacity>  
