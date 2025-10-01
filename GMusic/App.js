@@ -90,7 +90,35 @@ const stop = async () => {
 }
 
 const skipToPrevious = () => {
-  
+  songSlider.current.scrollToOffset({
+    offset: (songIndex - 1) * width
+  })
+}
+
+const skipToNext = () => {
+  songSlider.current.scrollToOffset({
+    offset: (songIndex + 1) * width
+  })
+}
+
+const updatePosition = async () => {
+  if (sound && isPlaying) {
+    const status = await sound.getStatusAsync();
+    setSongStatus(status);
+    if (status.positionMillis == status.durationMillis) {
+      if (!isLooping) await stop();
+    }
+  }
+}
+
+useEffect(() => {
+  const intervalId = setInterval(updatePosition, 500);
+  return () => clearInterval(intervalId);
+}, [sound, isPlaying])
+
+const repeat = async (value) => {
+  setIsLooping(value);
+  await sound.setIsLoopingAsync(value);
 }
 
   return (
@@ -98,6 +126,7 @@ const skipToPrevious = () => {
       <View style={styles.main}>
 
       <Animated.FlatList
+        ref={songSlider}
         data={songs}
         renderItem={renderSongs}
         keyExtractor={item => item.id}
@@ -129,28 +158,38 @@ const skipToPrevious = () => {
       <View>
         <Slider 
           style={styles.progressBar}
-          value={10}
+          value={songStatus ? songStatus.positionMillis : 0}
           minimumValue={0}
-          maximumValue={100}
+          maximumValue={songStatus ? songStatus.durationMillis : 0}
           thumbTintColor='#FFD369'
           minimunTrackTintColor='#FFD369'
           maximumTrackTintColor='#fff'
-          onSlidingComplete={() =>{}}
+          onSlidingComplete={(value) =>{
+            sound.setPositionAsync(value)
+          }}
         />
         <View style={styles.progressLevelDuration}>
-          <Text style={styles.progressLabelText}>00:00</Text>
-          <Text style={styles.progressLabelText}>00:00</Text>
+          <Text style={styles.progressLabelText}>
+            {songStatus ? (
+              `${Math.floor(songStatus.positionMillis / 1000 / 60)}:${String(Math.floor(songStatus.positionMillis / 1000 % 60)).padStart(2,"0")}`
+              ) : "00:00"}
+          </Text>
+          <Text style={styles.progressLabelText}>
+          {songStatus ? (
+              `${Math.floor(songStatus.durationMillis / 1000 / 60)}:${String(Math.floor(songStatus.durationMillis / 1000 % 60)).padStart(2,"0")}`
+              ) : "00:00"}  
+          </Text>
         </View>
       </View>
 
         <View style={styles.musicControlsContainer}>
-          <TouchableOpacity>  
+          <TouchableOpacity onPress={skipToPrevious}>  
             <Ionicons name='play-skip-back-outline' size ={35} color='#FFD369'/>
           </TouchableOpacity>
           <TouchableOpacity onPress={handlePlayPause}>  
             <Ionicons name={isPlaying?'pause-circle' : 'play-circle'} size ={75} color='#FFD369'/>
           </TouchableOpacity>
-          <TouchableOpacity>  
+          <TouchableOpacity onPress={skipToNext}>  
             <Ionicons name='play-skip-forward-outline' size ={35} color='#FFD369'/>
           </TouchableOpacity>
         </View>
@@ -161,8 +200,8 @@ const skipToPrevious = () => {
         <TouchableOpacity>
           <Ionicons name='heart-outline' size={30} color="#888888"/>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Ionicons name='repeat' size={30} color="#888888"/>
+        <TouchableOpacity onPress={() => { repeat(!isLooping) }}>
+          <Ionicons name='repeat' size={30} color={isLooping ? "#ffffff" : "#888888"}/>
         </TouchableOpacity>
         <TouchableOpacity>
           <Ionicons name='share-outline' size={30} color="#888888"/>
